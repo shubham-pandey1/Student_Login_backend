@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm i",
-    "dev": "nodemon index.js"
+    "build": "npm run build",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "author": "student",
   "license": "ISC",
