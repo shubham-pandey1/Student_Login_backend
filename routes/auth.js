@@ -58,36 +58,47 @@ router.post('/createuser',[
 })
 
 // Authenticate a user using: post "/api/auth/login". no login required
-router.post('/login', [
-    body('email', 'Enter a valid email').isEmail(),
+router.post('/login',[
+    body('email','Enter a valid email').isEmail(),
     body('password', 'Password cannot be blank').exists(),
-  ], async (req, res) => {
+], async(req,res)=>{
+    
+    //if there is error in login, return bad request and the errors
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    let success = false;
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()});
     }
-  
-    const { email, password } = req.body;
-  
-    try {
-      let user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ error: "Invalid credentials" });
-      }
-  
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({ error: "Invalid credentials" });
-      }
-  
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-      res.json({ success: true, authtoken: token });
-  
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send('Server Error');
+    
+
+    console.log("hello");
+    const {email, password} = req.body;
+    try{
+        let user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({error: "Please try to login with correct credentials"})
+        }
+
+        const passConpare = await bcrypt.compare(password, user.password);
+        if(!passConpare){
+            return res.status(400).json({success,error: "Please try to login with correct credentials"});
+        }
+
+        const data = {
+            user:{
+                id: user.id
+            }
+        }
+        const authtoken = jwt.sign(data,JWT_SECRET);
+        success = true;
+        res.json({success,authtoken});
+
+    }catch(error){
+        console.error(error.message);
+        res.status(400).send("Some error occured");
     }
-  });
+
+});
   
 
 // Route 3: Get logedin detail of user Post: "/api/auth/getuser". login required
